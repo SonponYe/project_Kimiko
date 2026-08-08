@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
+<meta name="mobile-web-app-capable" content="yes">
+<title>FingerKeys</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+  body {
+    background: #0a0a0f;
+    color: #e8e4dc;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    touch-action: none;
+  }
+
+  canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    touch-action: none;
+  }
+
+  #ui {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #screen-intro, #screen-place, #screen-game, #screen-mode-select {
+    position: absolute;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: opacity 0.4s ease;
+    pointer-events: all;
+  }
+
+  .hidden { opacity: 0; pointer-events: none !important; }
+
+  #screen-intro {
+    background: #0a0a0f;
+    gap: 20px;
+    text-align: center;
+    padding: 40px;
+  }
+
+  .logo {
+    font-size: 56px;
+    letter-spacing: -2px;
+    color: #e8e4dc;
+    font-weight: 300;
+  }
+  .logo span { color: #7c6af5; font-weight: 600; }
+
+  .tagline {
+    font-size: 16px;
+    color: #888;
+    letter-spacing: 0.05em;
+    max-width: 280px;
+    line-height: 1.6;
+  }
+
+  .hand-diagram {
+    display: flex;
+    gap: 48px;
+    margin: 10px 0;
+    align-items: flex-end;
+  }
+
+  .hand-svg { opacity: 0.7; }
+
+  .btn-primary {
+    background: #7c6af5;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 16px 40px;
+    font-size: 17px;
+    font-weight: 500;
+    cursor: pointer;
+    pointer-events: all;
+    letter-spacing: 0.01em;
+    transition: transform 0.1s, background 0.2s;
+  }
+  .btn-primary:active { transform: scale(0.97); background: #6355d4; }
+
+  .btn-secondary {
+    background: transparent;
+    color: #7c6af5;
+    border: 1.5px solid #7c6af5;
+    border-radius: 14px;
+    padding: 14px 36px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    pointer-events: all;
+    transition: transform 0.1s;
+  }
+  .btn-secondary:active { transform: scale(0.97); }
+
+  #screen-place {
+    background: #0a0a0f;
+    gap: 16px;
+    text-align: center;
+    padding: 40px;
+  }
+
+  .instruction-title {
+    font-size: 22px;
+    font-weight: 500;
+    color: #e8e4dc;
+  }
+
+  .instruction-sub {
+    font-size: 14px;
+    color: #666;
+    max-width: 300px;
+    line-height: 1.7;
+  }
+
+  #finger-counter {
+    font-size: 64px;
+    font-weight: 200;
+    color: #7c6af5;
+    line-height: 1;
+    letter-spacing: -3px;
+  }
+
+  #finger-label {
+    font-size: 13px;
+    color: #555;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  #screen-mode-select {
+    background: rgba(10,10,15,0.95);
+    gap: 16px;
+    padding: 40px;
+    text-align: center;
+  }
+
+  .mode-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #e8e4dc;
+    margin-bottom: 8px;
+  }
+
+  .mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .mode-card {
+    background: #14141f;
+    border: 1.5px solid #1e1e2e;
+    border-radius: 16px;
+    padding: 20px 16px;
+    cursor: pointer;
+    pointer-events: all;
+    transition: border-color 0.2s, transform 0.1s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .mode-card:active { transform: scale(0.97); border-color: #7c6af5; }
+
+  .mode-icon { font-size: 32px; }
+  .mode-name { font-size: 14px; font-weight: 500; color: #e8e4dc; }
+  .mode-desc { font-size: 12px; color: #555; line-height: 1.5; }
+
+  #screen-game {
+    background: transparent;
+    pointer-events: none;
+  }
+
+  #hud {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    background: rgba(10,10,15,0.8);
+    border: 0.5px solid #1e1e2e;
+    border-radius: 20px;
+    padding: 10px 24px;
+    backdrop-filter: blur(10px);
+    pointer-events: all;
+    z-index: 100;
+  }
+
+  #hud.hidden { opacity: 0; pointer-events: none; }
+
+  .hud-score { font-size: 24px; font-weight: 300; color: #e8e4dc; }
+  .hud-label { font-size: 10px; color: #444; text-transform: uppercase; letter-spacing: 0.1em; }
+  .hud-sep { width: 1px; height: 28px; background: #1e1e2e; }
+
+  #typed-display {
+    position: fixed;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    font-weight: 300;
+    color: #e8e4dc;
+    letter-spacing: 4px;
+    text-align: center;
+    min-width: 200px;
+    pointer-events: none;
+    z-index: 100;
+    background: rgba(10,10,15,0.7);
+    border-radius: 12px;
+    padding: 10px 24px;
+    border: 0.5px solid #1e1e2e;
+    transition: opacity 0.3s;
+  }
+  #typed-display.hidden { opacity: 0; }
+
+  #prompt-letter {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 120px;
+    font-weight: 100;
+    color: rgba(124, 106, 245, 0.15);
+    letter-spacing: -6px;
+    pointer-events: none;
+    z-index: 50;
+    transition: all 0.3s ease;
+  }
+
+  #feedback-flash {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    font-weight: 200;
+    color: #7c6af5;
+    pointer-events: none;
+    z-index: 200;
+    opacity: 0;
+    letter-spacing: 2px;
+    transition: opacity 0.15s;
+  }
+
+  #exit-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: rgba(10,10,15,0.8);
+    border: 0.5px solid #1e1e2e;
+    border-radius: 12px;
+    color: #555;
+    font-size: 13px;
+    padding: 8px 16px;
+    cursor: pointer;
+    pointer-events: all;
+    z-index: 200;
+    transition: color 0.2s;
+  }
+  #exit-btn:active { color: #e8e4dc; }
+  #exit-btn.hidden { display: none; }
+
+  .pulse-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid #7c6af5;
+    animation: pulse-out 0.6s ease-out forwards;
+    pointer-events: none;
+  }
+
+  @keyframes pulse-out {
+    0%   { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+
+  #orient-warning {
+    position: fixed;
+    inset: 0;
+    background: #0a0a0f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 9999;
+    text-align: center;
+    padding: 40px;
+  }
+  #orient-warning .icon { font-size: 48px; }
+  #orient-warning p { font-size: 16px; color: #666; }
+  #orient-warning.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div id="orient-warning">
+  <div class="icon">📱</div>
+  <p style="color:#e8e4dc; font-size:18px; font-weight:500;">Lay your phone flat</p>
+  <p>Place it face-up on a surface, then put all ten fingers on screen.</p>
+</div>
+
+<div id="ui">
+
+  <!-- INTRO -->
+  <div id="screen-intro">
+    <div class="logo">Finger<span>Keys</span></div>
+    <p class="tagline">Put your phone down. Place your hands. The screen becomes your keyboard.</p>
+
+    <div class="hand-diagram">
+      <svg class="hand-svg" width="80" height="100" viewBox="0 0 80 100" style="transform: rotate(45deg)">
+        <g fill="none" stroke="#7c6af5" stroke-width="1.5" stroke-linecap="round">
+          <rect x="10" y="50" width="60" height="40" rx="8" fill="#7c6af521"/>
+          <line x1="20" y1="50" x2="20" y2="20"/>
+          <line x1="32" y1="50" x2="32" y2="10"/>
+          <line x1="44" y1="50" x2="44" y2="14"/>
+          <line x1="56" y1="50" x2="56" y2="22"/>
+          <line x1="64" y1="55" x2="70" y2="42"/>
+        </g>
+      </svg>
+      <svg class="hand-svg" width="80" height="100" viewBox="0 0 80 100" style="transform: rotate(-45deg) scaleX(-1)">
+        <g fill="none" stroke="#5cb8f5" stroke-width="1.5" stroke-linecap="round">
+          <rect x="10" y="50" width="60" height="40" rx="8" fill="#5cb8f521"/>
+          <line x1="20" y1="50" x2="20" y2="20"/>
+          <line x1="32" y1="50" x2="32" y2="10"/>
+          <line x1="44" y1="50" x2="44" y2="14"/>
+          <line x1="56" y1="50" x2="56" y2="22"/>
+          <line x1="64" y1="55" x2="70" y2="42"/>
+        </g>
+      </svg>
+    </div>
+
+    <button class="btn-primary" onclick="showPlace()">Begin</button>
+    <p style="font-size:12px; color:#333; margin-top:8px;">Best on a real device, flat surface</p>
+  </div>
+
+  <!-- PLACE FINGERS -->
+  <div id="screen-place" class="hidden">
+    <p class="instruction-title">Place all 10 fingers</p>
+    <p class="instruction-sub">Left hand angled in from the left, right hand from the right. Leave space in the middle.</p>
+    <div id="finger-counter">0</div>
+    <div id="finger-label">fingers detected</div>
+    <p class="instruction-sub" id="place-hint" style="margin-top:8px;">Waiting for your hands…</p>
+  </div>
+
+  <!-- MODE SELECT -->
+  <div id="screen-mode-select" class="hidden">
+    <p class="mode-title">Choose your mode</p>
+    <p class="instruction-sub" style="margin-bottom:8px;">10 fingers locked in</p>
+    <div class="mode-grid">
+      <div class="mode-card" onclick="startMode('typing')">
+        <div class="mode-icon">⌨️</div>
+        <div class="mode-name">Type</div>
+        <div class="mode-desc">Lift fingers to type letters</div>
+      </div>
+      <div class="mode-card" onclick="startMode('dodge')">
+        <div class="mode-icon">⚡</div>
+        <div class="mode-name">Dodge</div>
+        <div class="mode-desc">Lift to zap incoming things</div>
+      </div>
+      <div class="mode-card" onclick="startMode('memory')">
+        <div class="mode-icon">🧠</div>
+        <div class="mode-name">Memory</div>
+        <div class="mode-desc">Mirror the tap sequence</div>
+      </div>
+      <div class="mode-card" onclick="startMode('rhythm')">
+        <div class="mode-icon">🎵</div>
+        <div class="mode-name">Rhythm</div>
+        <div class="mode-desc">Lift on the beat</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game" class="hidden">
+    <div id="typed-display" class="hidden"></div>
+    <div id="prompt-letter"></div>
+    <div id="feedback-flash"></div>
+  </div>
+
+</div>
+
+<div id="hud" class="hidden">
+  <div style="text-align:center">
+    <div class="hud-score" id="hud-score">0</div>
+    <div class="hud-label">score</div>
+  </div>
+  <div class="hud-sep"></div>
+  <div style="text-align:center">
+    <div class="hud-score" id="hud-combo">×1</div>
+    <div class="hud-label">combo</div>
+  </div>
+  <div class="hud-sep"></div>
+  <div style="text-align:center">
+    <div class="hud-score" id="hud-mode">—</div>
+    <div class="hud-label">mode</div>
+  </div>
+</div>
+
+<button id="exit-btn" class="hidden" onclick="exitGame()">✕ exit</button>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+canvas.width = W;
+canvas.height = H;
+
+window.addEventListener('resize', () => {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W;
+  canvas.height = H;
+});
+
+// State
+let activeTouches = {}; // identifier -> {x,y,color,label,index,isLeft}
+let fingerZones = [];   // locked zones when we have 10
+let gameMode = null;
+let score = 0;
+let combo = 1;
+let gameActive = false;
+let particles = [];
+let promptTarget = null; // index of finger to lift
+let typedText = '';
+let dodgeObjects = [];
+let memorySequence = [];
+let memoryStep = 0;
+let rhythmBeat = 0;
+let rhythmBpm = 80;
+let lastBeatTime = 0;
+let rhythmPromptFinger = -1;
+
+// Left hand: 5 fingers, base angle ~225 deg (fingertips pointing upper-left)
+// Right hand: 5 fingers, base angle ~45 deg
+// We'll detect and classify by x position
+
+const LEFT_COLORS  = ['#7c6af5','#9b85f7','#b09fff','#c8b8ff','#e0d5ff'];
+const RIGHT_COLORS = ['#5cb8f5','#7ecbf7','#a2dcf9','#c2eafc','#ddf4ff'];
+
+const FINGER_NAMES = ['pinky','ring','middle','index','thumb'];
+const LETTER_MAP = {
+  // left hand (index 0-4): left pinky to left thumb
+  0: 'A', 1: 'S', 2: 'D', 3: 'F', 4: 'G',
+  // right hand (index 5-9): right thumb to right pinky
+  5: 'H', 6: 'J', 7: 'K', 8: 'L', 9: ';'
+};
+
+const WORDS = ['FLASH','SKILL','HANDS','QUILL','PIANO','DRIFT','BLISS','CRANK','SWOOP','FROST'];
+
+// ---- orientation check (for desktop demo, skip)
+function checkOrientation() {
+  // On desktop, always show (it's a demo). On mobile, check orientation.
+  const warn = document.getElementById('orient-warning');
+  const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+  if (!isMobile) { warn.classList.add('hidden'); return; }
+  if (window.innerWidth > window.innerHeight) {
+    warn.classList.add('hidden');
+  } else {
+    warn.classList.remove('hidden');
+  }
+}
+window.addEventListener('resize', checkOrientation);
+checkOrientation();
+
+// ---- Screens ----
+function show(id) {
+  ['screen-intro','screen-place','screen-mode-select','screen-game'].forEach(s => {
+    document.getElementById(s).classList.add('hidden');
+  });
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function showPlace() {
+  show('screen-place');
+}
+
+// ---- Touch Handling ----
+document.addEventListener('touchstart', onTouchChange, {passive: false});
+document.addEventListener('touchend',   onTouchChange, {passive: false});
+document.addEventListener('touchcancel',onTouchChange, {passive: false});
+document.addEventListener('touchmove',  onTouchMove,   {passive: false});
+
+function onTouchChange(e) {
+  e.preventDefault();
+
+  const currentScreen = ['screen-intro','screen-place','screen-mode-select','screen-game']
+    .find(s => !document.getElementById(s).classList.contains('hidden'));
+
+  if (e.type === 'touchstart') {
+    for (const t of e.changedTouches) {
+      activeTouches[t.identifier] = { x: t.clientX, y: t.clientY };
+    }
+  } else {
+    for (const t of e.changedTouches) {
+      if (gameActive && fingerZones.length === 10) {
+        handleFingerLift(t.identifier, t.clientX, t.clientY);
+      }
+      delete activeTouches[t.identifier];
+    }
+  }
+
+  const count = Object.keys(activeTouches).length;
+
+  if (currentScreen === 'screen-place') {
+    updatePlaceScreen(count);
+  }
+}
+
+function onTouchMove(e) {
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    if (activeTouches[t.identifier]) {
+      activeTouches[t.identifier].x = t.clientX;
+      activeTouches[t.identifier].y = t.clientY;
+    }
+  }
+}
+
+function updatePlaceScreen(count) {
+  document.getElementById('finger-counter').textContent = count;
+
+  if (count < 5) {
+    document.getElementById('place-hint').textContent = 'Keep placing fingers…';
+  } else if (count < 10) {
+    document.getElementById('place-hint').textContent = `${10 - count} more to go`;
+  } else {
+    document.getElementById('place-hint').textContent = '✓ All fingers detected!';
+    // Lock zones after brief delay
+    setTimeout(() => {
+      if (Object.keys(activeTouches).length >= 10) {
+        lockFingerZones();
+      }
+    }, 600);
+  }
+}
+
+function lockFingerZones() {
+  const pts = Object.values(activeTouches).map(t => ({x: t.x, y: t.y}));
+
+  // Sort by x to split left/right
+  pts.sort((a,b) => a.x - b.x);
+
+  const midX = W / 2;
+  let left  = pts.filter(p => p.x < midX).slice(0,5);
+  let right = pts.filter(p => p.x >= midX).slice(0,5);
+
+  // Pad if needed (desktop testing with fewer fingers)
+  while (left.length < 5)  left.push({x: 80 + left.length * 30, y: H * 0.7});
+  while (right.length < 5) right.push({x: W - 80 - right.length * 30, y: H * 0.7});
+
+  // Sort left: smallest x = pinky, largest = thumb (toward center)
+  left.sort((a,b) => a.x - b.x);
+  // Sort right: smallest x = thumb (toward center), largest = pinky
+  right.sort((a,b) => a.x - b.x);
+
+  fingerZones = [];
+  // Indices 0-4: left pinky->thumb
+  left.forEach((p,i) => fingerZones.push({
+    x: p.x, y: p.y,
+    color: LEFT_COLORS[i],
+    name: FINGER_NAMES[i] + ' (L)',
+    side: 'left',
+    localIdx: i,
+    globalIdx: i
+  }));
+  // Indices 5-9: right thumb->pinky
+  right.forEach((p,i) => fingerZones.push({
+    x: p.x, y: p.y,
+    color: RIGHT_COLORS[i],
+    name: FINGER_NAMES[4-i] + ' (R)',
+    side: 'right',
+    localIdx: i,
+    globalIdx: i + 5
+  }));
+
+  show('screen-mode-select');
+}
+
+// ---- Mode Start ----
+function startMode(mode) {
+  gameMode = mode;
+  gameActive = true;
+  score = 0;
+  combo = 1;
+  typedText = '';
+  particles = [];
+  dodgeObjects = [];
+  memorySequence = [];
+  memoryStep = 0;
+
+  show('screen-game');
+  document.getElementById('hud').classList.remove('hidden');
+  document.getElementById('exit-btn').classList.remove('hidden');
+  document.getElementById('hud-mode').textContent = mode.toUpperCase();
+  updateHUD();
+
+  if (mode === 'typing') {
+    document.getElementById('typed-display').classList.remove('hidden');
+    document.getElementById('typed-display').textContent = '_ _ _ _ _';
+    nextTypingPrompt();
+  } else if (mode === 'dodge') {
+    spawnDodgeObject();
+  } else if (mode === 'memory') {
+    setTimeout(startMemoryRound, 800);
+  } else if (mode === 'rhythm') {
+    startRhythm();
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+function exitGame() {
+  gameActive = false;
+  gameMode = null;
+  fingerZones = [];
+  activeTouches = {};
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('exit-btn').classList.add('hidden');
+  document.getElementById('typed-display').classList.add('hidden');
+  document.getElementById('prompt-letter').textContent = '';
+  show('screen-intro');
+  clearCanvas();
+}
+
+// ---- Typing Mode ----
+let currentWord = '';
+let wordProgress = 0;
+
+function nextTypingPrompt() {
+  if (!gameActive || gameMode !== 'typing') return;
+  currentWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+  wordProgress = 0;
+  updateTypingDisplay();
+  showLetterPrompt(currentWord[0]);
+}
+
+function updateTypingDisplay() {
+  const el = document.getElementById('typed-display');
+  if (!el) return;
+  const done = currentWord.slice(0, wordProgress);
+  const rest = currentWord.slice(wordProgress).split('').join(' ');
+  el.innerHTML = `<span style="color:#7c6af5">${done}</span><span style="color:#333">${done ? ' ' : ''}${rest}</span>`;
+}
+
+function showLetterPrompt(letter) {
+  document.getElementById('prompt-letter').textContent = letter;
+}
+
+function handleTypingLift(zoneIdx) {
+  const needed = currentWord[wordProgress];
+  const mapped = LETTER_MAP[zoneIdx];
+  if (!mapped) return;
+
+  if (mapped === needed) {
+    wordProgress++;
+    combo = Math.min(combo + 1, 8);
+    score += 10 * combo;
+    updateHUD();
+    flash('+' + (10*combo), '#7c6af5');
+    spawnParticles(fingerZones[zoneIdx].x, fingerZones[zoneIdx].y, fingerZones[zoneIdx].color, 12);
+    updateTypingDisplay();
+
+    if (wordProgress >= currentWord.length) {
+      setTimeout(nextTypingPrompt, 400);
+    } else {
+      showLetterPrompt(currentWord[wordProgress]);
+    }
+  } else {
+    combo = 1;
+    updateHUD();
+    flash('✗', '#e24b4a');
+  }
+}
+
+// ---- Dodge Mode ----
+function spawnDodgeObject() {
+  if (!gameActive || gameMode !== 'dodge') return;
+  const targetIdx = Math.floor(Math.random() * 10);
+  const zone = fingerZones[targetIdx];
+  if (!zone) { setTimeout(spawnDodgeObject, 1000); return; }
+
+  dodgeObjects.push({
+    x: zone.x,
+    y: -40,
+    targetX: zone.x,
+    targetY: zone.y,
+    targetIdx,
+    radius: 18,
+    speed: 1.2 + score * 0.003,
+    color: '#e24b4a',
+    alive: true
+  });
+
+  const delay = Math.max(800, 2400 - score * 5);
+  setTimeout(spawnDodgeObject, delay);
+}
+
+function handleDodgeLift(zoneIdx) {
+  const hit = dodgeObjects.find(o => o.targetIdx === zoneIdx && o.alive && o.y > H * 0.2);
+  if (hit) {
+    hit.alive = false;
+    combo = Math.min(combo + 1, 10);
+    score += 20 * combo;
+    updateHUD();
+    flash('ZAP!', '#7c6af5');
+    spawnParticles(hit.x, hit.y, '#7c6af5', 20);
+  }
+}
+
+// ---- Memory Mode ----
+function startMemoryRound() {
+  if (!gameActive || gameMode !== 'memory') return;
+  memorySequence.push(Math.floor(Math.random() * 10));
+  memoryStep = 0;
+  playMemorySequence(0);
+}
+
+function playMemorySequence(i) {
+  if (i >= memorySequence.length) {
+    // Now user's turn
+    document.getElementById('prompt-letter').textContent = '👆';
+    return;
+  }
+  const idx = memorySequence[i];
+  setTimeout(() => {
+    highlightZone(idx);
+    document.getElementById('prompt-letter').textContent = (i+1) + '';
+    setTimeout(() => { playMemorySequence(i+1); }, 600);
+  }, 500);
+}
+
+function highlightZone(idx) {
+  const z = fingerZones[idx];
+  if (!z) return;
+  spawnParticles(z.x, z.y, z.color, 8);
+  // Brief ring
+  const ring = document.createElement('div');
+  ring.className = 'pulse-ring';
+  ring.style.cssText = `left:${z.x-30}px;top:${z.y-30}px;width:60px;height:60px;`;
+  document.body.appendChild(ring);
+  setTimeout(() => ring.remove(), 700);
+}
+
+function handleMemoryLift(zoneIdx) {
+  if (memorySequence[memoryStep] === zoneIdx) {
+    memoryStep++;
+    spawnParticles(fingerZones[zoneIdx].x, fingerZones[zoneIdx].y, fingerZones[zoneIdx].color, 8);
+
+    if (memoryStep >= memorySequence.length) {
+      combo++;
+      score += memorySequence.length * 15 * combo;
+      updateHUD();
+      flash('✓', '#7c6af5');
+      setTimeout(startMemoryRound, 1000);
+    }
+  } else {
+    combo = 1;
+    score = Math.max(0, score - 20);
+    updateHUD();
+    flash('✗', '#e24b4a');
+    setTimeout(() => {
+      memorySequence = [];
+      setTimeout(startMemoryRound, 600);
+    }, 500);
+  }
+}
+
+// ---- Rhythm Mode ----
+let rhythmInterval = null;
+
+function startRhythm() {
+  rhythmBpm = 75;
+  const ms = (60 / rhythmBpm) * 1000;
+  rhythmBeat = 0;
+  rhythmPromptFinger = -1;
+
+  rhythmInterval = setInterval(() => {
+    if (!gameActive || gameMode !== 'rhythm') { clearInterval(rhythmInterval); return; }
+    rhythmBeat++;
+    const idx = Math.floor(Math.random() * 10);
+    rhythmPromptFinger = idx;
+    lastBeatTime = performance.now();
+    highlightZone(idx);
+    document.getElementById('prompt-letter').textContent = '♩';
+    // Flash the zone
+    spawnParticles(fingerZones[idx].x, fingerZones[idx].y, '#fac775', 6);
+  }, ms);
+}
+
+function handleRhythmLift(zoneIdx) {
+  const now = performance.now();
+  const diff = Math.abs(now - lastBeatTime);
+  if (zoneIdx === rhythmPromptFinger) {
+    if (diff < 300) {
+      combo = Math.min(combo + 1, 12);
+      score += 15 * combo;
+      flash('PERFECT', '#7c6af5');
+    } else if (diff < 600) {
+      score += 8;
+      flash('GOOD', '#5cb8f5');
+    } else {
+      flash('LATE', '#888');
+    }
+    spawnParticles(fingerZones[zoneIdx].x, fingerZones[zoneIdx].y, fingerZones[zoneIdx].color, 10);
+    updateHUD();
+  }
+}
+
+// ---- Finger Lift Dispatcher ----
+function handleFingerLift(touchId, x, y) {
+  if (!gameActive || fingerZones.length === 0) return;
+
+  // Find closest zone
+  let closest = -1;
+  let bestDist = Infinity;
+  fingerZones.forEach((z, i) => {
+    const d = Math.hypot(z.x - x, z.y - y);
+    if (d < bestDist) { bestDist = d; closest = i; }
+  });
+
+  if (closest === -1 || bestDist > 120) return;
+
+  const z = fingerZones[closest];
+  spawnParticles(z.x, z.y, z.color, 6);
+
+  if (gameMode === 'typing')  handleTypingLift(closest);
+  if (gameMode === 'dodge')   handleDodgeLift(closest);
+  if (gameMode === 'memory')  handleMemoryLift(closest);
+  if (gameMode === 'rhythm')  handleRhythmLift(closest);
+}
+
+// ---- Visual Feedback ----
+function flash(text, color) {
+  const el = document.getElementById('feedback-flash');
+  el.textContent = text;
+  el.style.color = color;
+  el.style.opacity = '1';
+  el.style.fontSize = text.length > 3 ? '32px' : '48px';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = '0'; }, 400);
+}
+
+function updateHUD() {
+  document.getElementById('hud-score').textContent = score;
+  document.getElementById('hud-combo').textContent = '×' + combo;
+}
+
+// ---- Particles ----
+function spawnParticles(x, y, color, n) {
+  for (let i = 0; i < n; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * 4;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1,
+      decay: 0.02 + Math.random() * 0.03,
+      size: 2 + Math.random() * 4,
+      color
+    });
+  }
+}
+
+// ---- Game Loop / Render ----
+function clearCanvas() {
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fillRect(0, 0, W, H);
+}
+
+function gameLoop(ts) {
+  if (!gameActive) return;
+
+  ctx.fillStyle = 'rgba(10,10,15,0.88)';
+  ctx.fillRect(0, 0, W, H);
+
+  drawGrid();
+  drawFingerZones();
+  drawActiveTouches();
+
+  if (gameMode === 'dodge') updateDodge();
+
+  updateParticles();
+
+  requestAnimationFrame(gameLoop);
+}
+
+function drawGrid() {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(40,40,60,0.4)';
+  ctx.lineWidth = 0.5;
+  const step = 48;
+  for (let x = 0; x < W; x += step) {
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += step) {
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawFingerZones() {
+  if (!fingerZones.length) return;
+
+  fingerZones.forEach((z, i) => {
+    const isActive = Object.values(activeTouches).some(t =>
+      Math.hypot(t.x - z.x, t.y - z.y) < 60
+    );
+
+    // Outer ring
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(z.x, z.y, 32, 0, Math.PI * 2);
+    ctx.strokeStyle = isActive ? z.color : z.color + '55';
+    ctx.lineWidth = isActive ? 2 : 1;
+    ctx.stroke();
+
+    // Inner fill
+    ctx.beginPath();
+    ctx.arc(z.x, z.y, 22, 0, Math.PI * 2);
+    const alpha = isActive ? '33' : '11';
+    ctx.fillStyle = z.color + alpha;
+    ctx.fill();
+
+    // Letter label
+    const letter = LETTER_MAP[i];
+    if (letter) {
+      ctx.fillStyle = isActive ? z.color : z.color + 'aa';
+      ctx.font = `${isActive ? 600 : 400} 14px -apple-system`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(letter, z.x, z.y);
+    }
+
+    // Finger name (tiny)
+    ctx.fillStyle = z.color + '66';
+    ctx.font = '9px -apple-system';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(z.name, z.x, z.y + 26);
+    ctx.restore();
+  });
+}
+
+function drawActiveTouches() {
+  Object.values(activeTouches).forEach(t => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+function updateDodge() {
+  dodgeObjects = dodgeObjects.filter(o => o.alive && o.y < H + 60);
+  dodgeObjects.forEach(o => {
+    o.y += o.speed;
+
+    // Draw
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(o.x, o.y, o.radius, 0, Math.PI * 2);
+    const gradient = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.radius);
+    gradient.addColorStop(0, '#ff6b6b');
+    gradient.addColorStop(1, '#e24b4a33');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    // Warning line
+    if (o.targetIdx < fingerZones.length) {
+      const z = fingerZones[o.targetIdx];
+      ctx.setLineDash([4, 8]);
+      ctx.strokeStyle = '#e24b4a22';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(o.x, o.y);
+      ctx.lineTo(z.x, z.y);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Hit zone?
+    if (o.targetIdx < fingerZones.length) {
+      const z = fingerZones[o.targetIdx];
+      if (Math.hypot(o.x - z.x, o.y - z.y) < 30) {
+        o.alive = false;
+        combo = 1;
+        score = Math.max(0, score - 15);
+        updateHUD();
+        flash('HIT!', '#e24b4a');
+        spawnParticles(z.x, z.y, '#e24b4a', 15);
+      }
+    }
+  });
+}
+
+function updateParticles() {
+  particles = particles.filter(p => p.life > 0);
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vx *= 0.94;
+    p.vy *= 0.94;
+    p.life -= p.decay;
+
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+// ---- Desktop demo mode (mouse simulation) ----
+// Allow desktop testing with mouse clicks
+let mouseDown = false;
+let mouseId = 9999;
+
+canvas.addEventListener('mousedown', e => {
+  activeTouches[mouseId] = {x: e.clientX, y: e.clientY};
+  mouseDown = true;
+  const count = Object.keys(activeTouches).length;
+  const currentScreen = ['screen-intro','screen-place','screen-mode-select','screen-game']
+    .find(s => !document.getElementById(s).classList.contains('hidden'));
+  if (currentScreen === 'screen-place') updatePlaceScreen(count);
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (mouseDown && activeTouches[mouseId]) {
+    activeTouches[mouseId] = {x: e.clientX, y: e.clientY};
+  }
+});
+
+canvas.addEventListener('mouseup', e => {
+  if (gameActive && fingerZones.length === 10) {
+    handleFingerLift(mouseId, e.clientX, e.clientY);
+  }
+  delete activeTouches[mouseId];
+  mouseDown = false;
+});
+
+// Draw idle background animation on intro/place screens
+function idleLoop() {
+  if (gameActive) return;
+  ctx.fillStyle = 'rgba(10,10,15,0.3)';
+  ctx.fillRect(0, 0, W, H);
+
+  // Floating rings
+  const t = Date.now() * 0.001;
+  for (let i = 0; i < 5; i++) {
+    const x = W * (0.15 + i * 0.18);
+    const y = H * 0.5 + Math.sin(t + i * 1.2) * 30;
+    const r = 20 + Math.sin(t * 0.7 + i) * 8;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(124,106,245,${0.1 + 0.05 * Math.sin(t + i)})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  }
+  for (let i = 0; i < 5; i++) {
+    const x = W * (0.5 + i * 0.1);
+    const y = H * 0.5 + Math.sin(t * 0.8 + i * 1.5) * 25;
+    const r = 18 + Math.sin(t + i * 2) * 7;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(92,184,245,${0.08 + 0.04 * Math.sin(t + i)})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  requestAnimationFrame(idleLoop);
+}
+
+// Start idle animation
+ctx.fillStyle = '#0a0a0f';
+ctx.fillRect(0, 0, W, H);
+idleLoop();
+</script>
+</body>
+</html>
