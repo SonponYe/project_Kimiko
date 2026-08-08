@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-kimiko-bg: #06090d;
+  --color-kimiko-panel: #0d141e;
+  --color-kimiko-border: #1a2531;
+  --color-kimiko-fg: #dbe3ea;
+  --color-kimiko-muted: #8993a1;
+  --color-kimiko-sub: #6c7684;
+  --color-kimiko-dim: #565f6b;
+  --color-kimiko-faint: #424a55;
+  --color-kimiko-rest: #2c333c;
+  --color-kimiko-accent: #6fa8ff;
+  --color-kimiko-accent-dark: #3d6bc4;
+  --color-kimiko-accent-soft: #a9cdfb;
+  --color-kimiko-danger: #d1555c;
+  --color-kimiko-glow: #8fe0e8;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+@keyframes kimiko-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes kimiko-glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(111, 168, 255, 0);
+  }
+  50% {
+    box-shadow: 0 0 24px 4px rgba(111, 168, 255, 0.35);
+  }
+}
+
+.kimiko-pulse {
+  animation: kimiko-breathe 2.6s ease-in-out infinite;
+}
+
+.kimiko-glow {
+  animation: kimiko-glow-pulse 2.8s ease-in-out infinite;
+}
