@@ -15,7 +15,7 @@ export default function IntroScreen({ engineRef }: IntroScreenProps) {
         KIM<span className="kimiko-pulse font-semibold text-kimiko-accent">IKO</span>
       </h1>
       <p className="max-w-[280px] text-base leading-relaxed tracking-wide text-kimiko-muted">
-        Put your phone down. Place your hands. The screen becomes your keyboard.
+        Lay your phone flat. Rest all ten fingers on the screen. Lifting one is the only move.
       </p>
 
       <div className="my-2 flex items-end gap-12">
@@ -24,7 +24,7 @@ export default function IntroScreen({ engineRef }: IntroScreenProps) {
       </div>
 
       <button
-        onClick={() => engineRef.current?.showPlace()}
+        onClick={() => engineRef.current?.showModeSelect()}
         className="kimiko-glow rounded-2xl bg-kimiko-accent px-10 py-4 text-[17px] font-medium tracking-wide text-kimiko-bg transition-transform active:scale-95 active:bg-kimiko-accent-dark"
       >
         Begin

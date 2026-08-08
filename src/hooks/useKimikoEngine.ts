@@ -8,6 +8,8 @@ const DEFAULT_SNAPSHOT: EngineSnapshot = {
   screen: 'intro',
   fingerCount: 0,
   fingerZonesLocked: false,
+  pendingMode: null,
+  countdown: null,
   mode: null,
   score: 0,
   combo: 1,

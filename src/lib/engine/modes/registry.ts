@@ -12,8 +12,19 @@ const FACTORIES: Record<GameModeId, () => GameModeController> = {
   rhythm: createRhythmMode,
 };
 
+const META: Record<GameModeId, GameModeMeta> = {
+  typing: TYPING_META,
+  dodge: DODGE_META,
+  memory: MEMORY_META,
+  rhythm: RHYTHM_META,
+};
+
 export const GAME_MODES: GameModeMeta[] = [TYPING_META, DODGE_META, MEMORY_META, RHYTHM_META];
 
 export function createModeController(id: GameModeId): GameModeController {
   return FACTORIES[id]();
+}
+
+export function getModeMeta(id: GameModeId): GameModeMeta {
+  return META[id];
 }

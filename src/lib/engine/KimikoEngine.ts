@@ -2,12 +2,13 @@ import { lockFingerZones } from './fingerZones';
 import { createModeController } from './modes/registry';
 import type { GameModeController } from './modes/types';
 import { createParticles, createRing, stepParticles, stepRings } from './particles';
-import { clearFrame, drawActiveTouches, drawFingerZones, drawGrid, drawIdleBackground } from './renderer';
+import { clearFrame, drawActiveTouches, drawFingerZones, drawGrid, drawIdleBackground, drawPlacementTouches } from './renderer';
 import type { EngineSnapshot, FingerZone, FlashEvent, GameModeId, Particle, Ring, ScreenId, TouchPoint, TypedDisplayState } from './types';
 
 type Listener = (snapshot: EngineSnapshot) => void;
 
 const PLACE_LOCK_DELAY_MS = 600;
+const COUNTDOWN_STEP_MS = 700;
 const FLASH_DURATION_MS = 400;
 const LIFT_HIT_RADIUS = 120;
 
@@ -26,6 +27,8 @@ export class KimikoEngine {
   private activeTouches = new Map<number, TouchPoint>();
   fingerZones: FingerZone[] = [];
 
+  private pendingMode: GameModeId | null = null;
+  private countdown: number | null = null;
   private mode: GameModeId | null = null;
   private activeController: GameModeController | null = null;
   private gameActive = false;
@@ -98,6 +101,8 @@ export class KimikoEngine {
       screen: this.screen,
       fingerCount: this.activeTouches.size,
       fingerZonesLocked: this.fingerZones.length === 10,
+      pendingMode: this.pendingMode,
+      countdown: this.countdown,
       mode: this.mode,
       score: this.score,
       combo: this.combo,
@@ -108,17 +113,31 @@ export class KimikoEngine {
   }
 
   // ---- Screen navigation ----
+  // Flow: intro -> mode-select (pick a game) -> place (rest ten fingers,
+  // 3-2-1 countdown once all ten are down) -> game.
 
   showIntro() {
     this.teardownMode();
     this.screen = 'intro';
+    this.pendingMode = null;
+    this.countdown = null;
     this.fingerZones = [];
     this.activeTouches.clear();
     clearFrame(this.ctx, this.width, this.height, false);
     this.notify();
   }
 
-  showPlace() {
+  showModeSelect() {
+    this.screen = 'mode-select';
+    this.notify();
+  }
+
+  /** Called when a mode card is tapped on the mode-select screen. */
+  selectMode(id: GameModeId) {
+    this.pendingMode = id;
+    this.countdown = null;
+    this.fingerZones = [];
+    this.activeTouches.clear();
     this.screen = 'place';
     this.notify();
   }
@@ -151,7 +170,10 @@ export class KimikoEngine {
   }
 
   private afterTouchCountChange() {
-    if (this.screen === 'place') {
+    // Only arm the lock while still waiting for fingers to settle — once
+    // zones are locked, further touch churn (e.g. a finger lifting during
+    // the countdown) shouldn't re-trigger it.
+    if (this.screen === 'place' && this.fingerZones.length !== 10) {
       const count = this.activeTouches.size;
       if (count >= 10) {
         if (this.placeLockTimer === null) {
@@ -171,8 +193,28 @@ export class KimikoEngine {
   private lockZones() {
     const points = Array.from(this.activeTouches.values());
     this.fingerZones = lockFingerZones(points, this.width, this.height);
-    this.screen = 'mode-select';
     this.notify();
+    this.runCountdown();
+  }
+
+  private runCountdown() {
+    this.countdown = 3;
+    this.notify();
+
+    const step = () => {
+      if (this.countdown === null || this.countdown <= 1) {
+        this.countdown = null;
+        const mode = this.pendingMode;
+        this.notify();
+        if (mode) this.startMode(mode);
+        return;
+      }
+      this.countdown -= 1;
+      this.notify();
+      this.schedule(step, COUNTDOWN_STEP_MS);
+    };
+
+    this.schedule(step, COUNTDOWN_STEP_MS);
   }
 
   private dispatchLift(x: number, y: number) {
@@ -197,6 +239,7 @@ export class KimikoEngine {
   startMode(id: GameModeId) {
     this.teardownMode();
     this.mode = id;
+    this.pendingMode = null;
     this.gameActive = true;
     this.score = 0;
     this.combo = 1;
@@ -215,6 +258,7 @@ export class KimikoEngine {
     this.activeController = null;
     this.gameActive = false;
     this.mode = null;
+    this.countdown = null;
     this.clearScheduled();
   }
 
@@ -310,6 +354,11 @@ export class KimikoEngine {
       this.activeController?.update?.(this, ctx);
       this.rings = stepRings(ctx, this.rings);
       this.particles = stepParticles(ctx, this.particles);
+    } else if (this.screen === 'place') {
+      // Give visible proof that each resting finger is actually being
+      // tracked — this is the only feedback before zones lock.
+      drawIdleBackground(ctx, this.width, this.height, ts * 0.001);
+      drawPlacementTouches(ctx, this.activeTouches);
     } else {
       drawIdleBackground(ctx, this.width, this.height, ts * 0.001);
     }

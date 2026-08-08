@@ -85,6 +85,32 @@ export function drawActiveTouches(ctx: CanvasRenderingContext2D, activeTouches: 
   });
 }
 
+/**
+ * Bigger, high-contrast markers for the "place your fingers" step — this is
+ * the only proof-of-life a resting finger gets before zones lock, so it
+ * needs to read clearly at a glance rather than blend into the scene.
+ */
+export function drawPlacementTouches(ctx: CanvasRenderingContext2D, activeTouches: Map<number, TouchPoint>) {
+  activeTouches.forEach((t) => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, 26, 0, Math.PI * 2);
+    ctx.fillStyle = `${CANVAS_COLORS.accent}33`;
+    ctx.fill();
+    ctx.strokeStyle = CANVAS_COLORS.accent;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = CANVAS_COLORS.accentSoft;
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
 export function drawDodgeObject(ctx: CanvasRenderingContext2D, o: DodgeObject, target?: FingerZone) {
   ctx.save();
   ctx.beginPath();

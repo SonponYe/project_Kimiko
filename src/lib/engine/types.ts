@@ -65,6 +65,8 @@ export interface EngineSnapshot {
   screen: ScreenId;
   fingerCount: number;
   fingerZonesLocked: boolean;
+  pendingMode: GameModeId | null;
+  countdown: number | null;
   mode: GameModeId | null;
   score: number;
   combo: number;
