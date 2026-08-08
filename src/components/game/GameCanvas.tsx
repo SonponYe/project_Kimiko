@@ -10,6 +10,14 @@ interface GameCanvasProps {
 
 const MOUSE_TOUCH_ID = -1;
 
+// A touch's `target` is fixed to whatever element it started on, for the
+// entire gesture (unlike mouse events). Skip UI controls so their native
+// tap/click still fires — otherwise preventDefault() below suppresses the
+// synthetic click a <button> relies on, and buttons stop responding to touch.
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest('button, a, [role="button"], input, select, textarea') !== null;
+}
+
 export default function GameCanvas({ canvasRef, engineRef }: GameCanvasProps) {
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -20,20 +28,26 @@ export default function GameCanvas({ canvasRef, engineRef }: GameCanvasProps) {
     window.addEventListener('resize', handleResize);
 
     const handleTouchStart = (e: TouchEvent) => {
+      const touches = Array.from(e.changedTouches).filter((t) => !isInteractiveTarget(t.target));
+      if (touches.length === 0) return;
       e.preventDefault();
-      for (const t of Array.from(e.changedTouches)) {
+      for (const t of touches) {
         engineRef.current?.handleTouchStart(t.identifier, t.clientX, t.clientY);
       }
     };
     const handleTouchMove = (e: TouchEvent) => {
+      const touches = Array.from(e.changedTouches).filter((t) => !isInteractiveTarget(t.target));
+      if (touches.length === 0) return;
       e.preventDefault();
-      for (const t of Array.from(e.changedTouches)) {
+      for (const t of touches) {
         engineRef.current?.handleTouchMove(t.identifier, t.clientX, t.clientY);
       }
     };
     const handleTouchEnd = (e: TouchEvent) => {
+      const touches = Array.from(e.changedTouches).filter((t) => !isInteractiveTarget(t.target));
+      if (touches.length === 0) return;
       e.preventDefault();
-      for (const t of Array.from(e.changedTouches)) {
+      for (const t of touches) {
         engineRef.current?.handleTouchEnd(t.identifier, t.clientX, t.clientY);
       }
     };
