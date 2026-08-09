@@ -50,6 +50,7 @@ export class KimikoEngine {
   private raf: number | null = null;
   private listeners = new Set<Listener>();
   private paused = false;
+  private expectedFingerCount = 10;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -101,7 +102,7 @@ export class KimikoEngine {
     return {
       screen: this.screen,
       fingerCount: this.activeTouches.size,
-      fingerZonesLocked: this.fingerZones.length === 10,
+      fingerZonesLocked: this.fingerZones.length === this.expectedFingerCount,
       pendingMode: this.pendingMode,
       countdown: this.countdown,
       mode: this.mode,
@@ -112,6 +113,11 @@ export class KimikoEngine {
       promptLetter: this.promptLetter,
       flash: this.flashState,
     };
+  }
+
+  setExpectedFingerCount(n: number) {
+    this.expectedFingerCount = Math.max(1, Math.min(10, Math.floor(n)));
+    this.notify();
   }
 
   pauseGame() {
@@ -174,7 +180,7 @@ export class KimikoEngine {
   }
 
   handleTouchEnd(id: number, x: number, y: number) {
-    if (this.screen === 'game' && this.gameActive && this.fingerZones.length === 10) {
+    if (this.screen === 'game' && this.gameActive && this.fingerZones.length === this.expectedFingerCount) {
       this.dispatchLift(x, y);
     }
     this.activeTouches.delete(id);
@@ -185,13 +191,13 @@ export class KimikoEngine {
     // Only arm the lock while still waiting for fingers to settle — once
     // zones are locked, further touch churn (e.g. a finger lifting during
     // the countdown) shouldn't re-trigger it.
-    if (this.screen === 'place' && this.fingerZones.length !== 10) {
+    if (this.screen === 'place' && this.fingerZones.length !== this.expectedFingerCount) {
       const count = this.activeTouches.size;
-      if (count >= 10) {
+      if (count >= this.expectedFingerCount) {
         if (this.placeLockTimer === null) {
           this.placeLockTimer = window.setTimeout(() => {
             this.placeLockTimer = null;
-            if (this.activeTouches.size >= 10) this.lockZones();
+            if (this.activeTouches.size >= this.expectedFingerCount) this.lockZones();
           }, PLACE_LOCK_DELAY_MS);
         }
       } else if (this.placeLockTimer !== null) {

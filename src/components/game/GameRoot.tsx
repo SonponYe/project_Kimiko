@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import GameScreen from '@/components/screens/GameScreen';
 import IntroScreen from '@/components/screens/IntroScreen';
 import ModeSelectScreen from '@/components/screens/ModeSelectScreen';
@@ -22,6 +22,14 @@ export default function GameRoot() {
   const { engineRef, snapshot } = useKimikoEngine(canvasRef);
   const isPortrait = useIsPortrait();
   const maxTouchPoints = useMaxTouchPoints();
+  useEffect(() => {
+    if (!maxTouchPoints) return;
+    // If the device reports fewer than 10 simultaneous touches, configure
+    // the engine to expect that many so the game can lock that number of zones.
+    if (engineRef.current) {
+      engineRef.current.setExpectedFingerCount(Math.min(10, maxTouchPoints));
+    }
+  }, [maxTouchPoints, engineRef]);
   const needsOrientationWarning = isPortrait && SCREENS_REQUIRING_LANDSCAPE.has(snapshot.screen);
   const pendingModeMeta = snapshot.pendingMode ? getModeMeta(snapshot.pendingMode) : null;
 

@@ -21,17 +21,20 @@ export default function PlaceFingersScreen({ fingerCount, countdown, modeMeta, m
     );
   }
 
+  // Determine the target number of fingers required for a full layout.
+  const required = maxTouchPoints !== null && maxTouchPoints < 10 ? maxTouchPoints : 10;
+
   // A phone's touch digitizer has a hardware ceiling on simultaneous
   // touches — commonly 5 on phones — no amount of code can raise that.
   const hardwareCapped = maxTouchPoints !== null && maxTouchPoints < 10 && fingerCount >= maxTouchPoints;
 
   const hint = hardwareCapped
     ? `This device only senses ${maxTouchPoints} touches at once — it can't detect more, even resting flat.`
-    : fingerCount >= 10
+    : fingerCount >= required
       ? '✓ All fingers detected!'
-      : fingerCount < 5
+      : fingerCount < Math.min(5, required)
         ? 'Keep placing fingers…'
-        : `${10 - fingerCount} more to go`;
+        : `${required - fingerCount} more to go`;
 
   return (
     <div className="pointer-events-auto flex h-full w-full flex-col items-center justify-center gap-4 bg-kimiko-bg px-10 text-center">
