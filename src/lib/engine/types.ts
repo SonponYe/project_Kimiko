@@ -68,6 +68,7 @@ export interface EngineSnapshot {
   pendingMode: GameModeId | null;
   countdown: number | null;
   mode: GameModeId | null;
+  paused?: boolean;
   score: number;
   combo: number;
   typedDisplay: TypedDisplayState | null;

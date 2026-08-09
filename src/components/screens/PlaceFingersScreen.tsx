@@ -4,9 +4,10 @@ interface PlaceFingersScreenProps {
   fingerCount: number;
   countdown: number | null;
   modeMeta: GameModeMeta | null;
+  maxTouchPoints: number | null;
 }
 
-export default function PlaceFingersScreen({ fingerCount, countdown, modeMeta }: PlaceFingersScreenProps) {
+export default function PlaceFingersScreen({ fingerCount, countdown, modeMeta, maxTouchPoints }: PlaceFingersScreenProps) {
   if (countdown !== null) {
     return (
       <div className="pointer-events-auto flex h-full w-full flex-col items-center justify-center gap-3 bg-kimiko-bg px-10 text-center">
@@ -20,8 +21,13 @@ export default function PlaceFingersScreen({ fingerCount, countdown, modeMeta }:
     );
   }
 
-  const hint =
-    fingerCount >= 10
+  // A phone's touch digitizer has a hardware ceiling on simultaneous
+  // touches — commonly 5 on phones — no amount of code can raise that.
+  const hardwareCapped = maxTouchPoints !== null && maxTouchPoints < 10 && fingerCount >= maxTouchPoints;
+
+  const hint = hardwareCapped
+    ? `This device only senses ${maxTouchPoints} touches at once — it can't detect more, even resting flat.`
+    : fingerCount >= 10
       ? '✓ All fingers detected!'
       : fingerCount < 5
         ? 'Keep placing fingers…'
@@ -32,7 +38,16 @@ export default function PlaceFingersScreen({ fingerCount, countdown, modeMeta }:
       <p className="text-[22px] font-medium text-kimiko-fg">Place all 10 fingers</p>
       {modeMeta && (
         <p className="text-xs uppercase tracking-widest text-kimiko-dim">
-          {modeMeta.icon} {modeMeta.name}
+          {modeMeta.icon.startsWith('/') ? (
+            <>
+              <img src={modeMeta.icon} alt={modeMeta.name} className="inline-block w-5 h-5 mr-2 align-middle" />
+              {modeMeta.name}
+            </>
+          ) : (
+            <>
+              {modeMeta.icon} {modeMeta.name}
+            </>
+          )}
         </p>
       )}
       <p className="max-w-[300px] text-sm leading-relaxed text-kimiko-sub">
@@ -40,7 +55,9 @@ export default function PlaceFingersScreen({ fingerCount, countdown, modeMeta }:
       </p>
       <div className="kimiko-pulse text-6xl font-extralight tracking-tighter text-kimiko-accent">{fingerCount}</div>
       <div className="text-[13px] uppercase tracking-widest text-kimiko-dim">fingers detected</div>
-      <p className="mt-2 text-sm leading-relaxed text-kimiko-sub">{hint}</p>
+      <p className={`mt-2 max-w-[300px] text-sm leading-relaxed ${hardwareCapped ? 'text-kimiko-danger' : 'text-kimiko-sub'}`}>
+        {hint}
+      </p>
     </div>
   );
 }

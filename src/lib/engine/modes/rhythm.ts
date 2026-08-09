@@ -5,7 +5,7 @@ import type { GameModeController, GameModeMeta } from './types';
 export const RHYTHM_META: GameModeMeta = {
   id: 'rhythm',
   name: 'Rhythm',
-  icon: '🎵',
+  icon: '/icons/rhythm.svg',
   description: 'Lift on the beat',
 };
 

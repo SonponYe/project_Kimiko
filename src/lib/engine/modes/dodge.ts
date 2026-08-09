@@ -7,7 +7,7 @@ import type { GameModeController, GameModeMeta } from './types';
 export const DODGE_META: GameModeMeta = {
   id: 'dodge',
   name: 'Dodge',
-  icon: '⚡',
+  icon: '/icons/dodge.svg',
   description: 'Lift to zap incoming things',
 };
 

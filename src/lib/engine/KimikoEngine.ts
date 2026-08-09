@@ -49,6 +49,7 @@ export class KimikoEngine {
 
   private raf: number | null = null;
   private listeners = new Set<Listener>();
+  private paused = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -104,12 +105,23 @@ export class KimikoEngine {
       pendingMode: this.pendingMode,
       countdown: this.countdown,
       mode: this.mode,
+      paused: this.paused,
       score: this.score,
       combo: this.combo,
       typedDisplay: this.typedDisplay,
       promptLetter: this.promptLetter,
       flash: this.flashState,
     };
+  }
+
+  pauseGame() {
+    this.paused = true;
+    this.notify();
+  }
+
+  resumeGame() {
+    this.paused = false;
+    this.notify();
   }
 
   // ---- Screen navigation ----
@@ -351,9 +363,11 @@ export class KimikoEngine {
       drawGrid(ctx, this.width, this.height);
       drawFingerZones(ctx, this.fingerZones, this.activeTouches, ts * 0.001);
       drawActiveTouches(ctx, this.activeTouches);
-      this.activeController?.update?.(this, ctx);
-      this.rings = stepRings(ctx, this.rings);
-      this.particles = stepParticles(ctx, this.particles);
+      if (!this.paused) {
+        this.activeController?.update?.(this, ctx);
+        this.rings = stepRings(ctx, this.rings);
+        this.particles = stepParticles(ctx, this.particles);
+      }
     } else if (this.screen === 'place') {
       // Give visible proof that each resting finger is actually being
       // tracked — this is the only feedback before zones lock.

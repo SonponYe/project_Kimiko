@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { RefObject } from 'react';
 import HandDiagram from '@/components/game/HandDiagram';
 import type { KimikoEngine } from '@/lib/engine/KimikoEngine';
@@ -9,8 +10,15 @@ interface IntroScreenProps {
 }
 
 export default function IntroScreen({ engineRef }: IntroScreenProps) {
+  const [animating, setAnimating] = useState(false);
+
+  function handleBegin() {
+    setAnimating(true);
+    setTimeout(() => engineRef.current?.showModeSelect(), 220);
+  }
+
   return (
-    <div className="pointer-events-auto flex h-full w-full flex-col items-center justify-center gap-5 bg-kimiko-bg px-10 text-center">
+    <div className={`pointer-events-auto flex h-full w-full flex-col items-center justify-center gap-5 bg-kimiko-bg px-10 text-center transition-all ${animating ? 'opacity-70 scale-95' : ''}`}>
       <h1 className="text-[56px] font-light tracking-tight text-kimiko-fg">
         KIM<span className="kimiko-pulse font-semibold text-kimiko-accent">IKO</span>
       </h1>
@@ -24,7 +32,7 @@ export default function IntroScreen({ engineRef }: IntroScreenProps) {
       </div>
 
       <button
-        onClick={() => engineRef.current?.showModeSelect()}
+        onClick={handleBegin}
         className="kimiko-glow rounded-2xl bg-kimiko-accent px-10 py-4 text-[17px] font-medium tracking-wide text-kimiko-bg transition-transform active:scale-95 active:bg-kimiko-accent-dark"
       >
         Begin

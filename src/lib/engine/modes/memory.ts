@@ -5,7 +5,7 @@ import type { GameModeController, GameModeMeta } from './types';
 export const MEMORY_META: GameModeMeta = {
   id: 'memory',
   name: 'Memory',
-  icon: '🧠',
+  icon: '/icons/memory.svg',
   description: 'Mirror the tap sequence',
 };
 

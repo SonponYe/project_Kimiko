@@ -5,7 +5,7 @@ import type { GameModeController, GameModeMeta } from './types';
 export const TYPING_META: GameModeMeta = {
   id: 'typing',
   name: 'Type',
-  icon: '⌨️',
+  icon: '/icons/typing.svg',
   description: 'Lift fingers to type letters',
 };
 
