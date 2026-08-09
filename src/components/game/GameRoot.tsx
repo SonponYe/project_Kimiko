@@ -7,6 +7,7 @@ import ModeSelectScreen from '@/components/screens/ModeSelectScreen';
 import PlaceFingersScreen from '@/components/screens/PlaceFingersScreen';
 import { useKimikoEngine } from '@/hooks/useKimikoEngine';
 import { useIsPortrait } from '@/hooks/useOrientation';
+import { useMaxTouchPoints } from '@/hooks/useMaxTouchPoints';
 import { getModeMeta } from '@/lib/engine/modes/registry';
 import GameCanvas from './GameCanvas';
 import OrientationWarning from './OrientationWarning';
@@ -20,6 +21,7 @@ export default function GameRoot() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { engineRef, snapshot } = useKimikoEngine(canvasRef);
   const isPortrait = useIsPortrait();
+  const maxTouchPoints = useMaxTouchPoints();
   const needsOrientationWarning = isPortrait && SCREENS_REQUIRING_LANDSCAPE.has(snapshot.screen);
   const pendingModeMeta = snapshot.pendingMode ? getModeMeta(snapshot.pendingMode) : null;
 
@@ -31,7 +33,12 @@ export default function GameRoot() {
         {snapshot.screen === 'intro' && <IntroScreen engineRef={engineRef} />}
         {snapshot.screen === 'mode-select' && <ModeSelectScreen engineRef={engineRef} />}
         {snapshot.screen === 'place' && (
-          <PlaceFingersScreen fingerCount={snapshot.fingerCount} countdown={snapshot.countdown} modeMeta={pendingModeMeta} />
+          <PlaceFingersScreen
+            fingerCount={snapshot.fingerCount}
+            countdown={snapshot.countdown}
+            modeMeta={pendingModeMeta}
+            maxTouchPoints={maxTouchPoints}
+          />
         )}
         {snapshot.screen === 'game' && <GameScreen snapshot={snapshot} engineRef={engineRef} />}
       </div>
