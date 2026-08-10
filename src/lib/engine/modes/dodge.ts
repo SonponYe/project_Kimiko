@@ -15,7 +15,7 @@ export function createDodgeMode(): GameModeController {
   let objects: DodgeObject[] = [];
 
   function spawn(engine: KimikoEngine) {
-    const targetIdx = Math.floor(Math.random() * 10);
+    const targetIdx = Math.floor(Math.random() * engine.fingerZones.length);
     const zone = engine.fingerZones[targetIdx];
     if (zone) {
       objects.push({

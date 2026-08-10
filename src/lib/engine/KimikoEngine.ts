@@ -1,3 +1,4 @@
+import { DEFAULT_FINGER_COUNT } from './constants';
 import { lockFingerZones } from './fingerZones';
 import { createModeController } from './modes/registry';
 import type { GameModeController } from './modes/types';
@@ -50,7 +51,7 @@ export class KimikoEngine {
   private raf: number | null = null;
   private listeners = new Set<Listener>();
   private paused = false;
-  private expectedFingerCount = 10;
+  private expectedFingerCount = DEFAULT_FINGER_COUNT;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -115,8 +116,13 @@ export class KimikoEngine {
     };
   }
 
+  /**
+   * Clamped to `DEFAULT_FINGER_COUNT` (4) as a ceiling — that's the design
+   * target regardless of how many touches the hardware could theoretically
+   * report. Only devices that can't even manage that get scaled down.
+   */
   setExpectedFingerCount(n: number) {
-    this.expectedFingerCount = Math.max(1, Math.min(10, Math.floor(n)));
+    this.expectedFingerCount = Math.max(1, Math.min(DEFAULT_FINGER_COUNT, Math.floor(n)));
     this.notify();
   }
 
@@ -210,7 +216,8 @@ export class KimikoEngine {
 
   private lockZones() {
     const points = Array.from(this.activeTouches.values());
-    this.fingerZones = lockFingerZones(points, this.width, this.height);
+    const fingersPerHand = Math.max(1, Math.round(this.expectedFingerCount / 2));
+    this.fingerZones = lockFingerZones(points, this.width, this.height, fingersPerHand);
     this.notify();
     this.runCountdown();
   }

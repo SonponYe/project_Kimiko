@@ -23,7 +23,7 @@ export default function IntroScreen({ engineRef }: IntroScreenProps) {
         KIM<span className="kimiko-pulse font-semibold text-kimiko-accent">IKO</span>
       </h1>
       <p className="max-w-[280px] text-base leading-relaxed tracking-wide text-kimiko-muted">
-        Lay your phone flat. Rest all ten fingers on the screen. Lifting one is the only move.
+        Lay your phone flat. Rest your index fingers and thumbs on the screen. Lifting one is the only move.
       </p>
 
       <div className="my-2 flex items-end gap-12">

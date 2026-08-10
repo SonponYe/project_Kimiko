@@ -26,7 +26,7 @@ export function createMemoryMode(): GameModeController {
   }
 
   function startRound(engine: KimikoEngine) {
-    sequence.push(Math.floor(Math.random() * 10));
+    sequence.push(Math.floor(Math.random() * engine.fingerZones.length));
     step = 0;
     playSequence(engine, 0);
   }

@@ -8,6 +8,7 @@ import PlaceFingersScreen from '@/components/screens/PlaceFingersScreen';
 import { useKimikoEngine } from '@/hooks/useKimikoEngine';
 import { useIsPortrait } from '@/hooks/useOrientation';
 import { useMaxTouchPoints } from '@/hooks/useMaxTouchPoints';
+import { DEFAULT_FINGER_COUNT } from '@/lib/engine/constants';
 import { getModeMeta } from '@/lib/engine/modes/registry';
 import GameCanvas from './GameCanvas';
 import OrientationWarning from './OrientationWarning';
@@ -24,10 +25,10 @@ export default function GameRoot() {
   const maxTouchPoints = useMaxTouchPoints();
   useEffect(() => {
     if (!maxTouchPoints) return;
-    // If the device reports fewer than 10 simultaneous touches, configure
-    // the engine to expect that many so the game can lock that number of zones.
+    // 4 fingers (index + thumb per hand) is the design target; only scale
+    // down further if a device genuinely can't sense that many at once.
     if (engineRef.current) {
-      engineRef.current.setExpectedFingerCount(Math.min(10, maxTouchPoints));
+      engineRef.current.setExpectedFingerCount(Math.min(DEFAULT_FINGER_COUNT, maxTouchPoints));
     }
   }, [maxTouchPoints, engineRef]);
   const needsOrientationWarning = isPortrait && SCREENS_REQUIRING_LANDSCAPE.has(snapshot.screen);

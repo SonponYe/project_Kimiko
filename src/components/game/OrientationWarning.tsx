@@ -22,8 +22,8 @@ export default function OrientationWarning({ modeMeta }: OrientationWarningProps
       <p className="text-lg font-medium text-kimiko-fg">Rotate your phone</p>
       <p className="max-w-[280px] text-base leading-relaxed text-kimiko-sub">
         {modeMeta
-          ? `Lay it flat, landscape, then rest all ten fingers to start ${modeMeta.name}.`
-          : 'Lay it flat, landscape, then rest all ten fingers on the screen.'}
+          ? `Lay it flat, landscape, then rest your fingers to start ${modeMeta.name}.`
+          : 'Lay it flat, landscape, then rest your fingers on the screen.'}
       </p>
     </div>
   );

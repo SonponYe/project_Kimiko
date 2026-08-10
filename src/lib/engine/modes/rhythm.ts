@@ -17,7 +17,7 @@ export function createRhythmMode(): GameModeController {
   let lastBeatTime = 0;
 
   function beat(engine: KimikoEngine) {
-    const idx = Math.floor(Math.random() * 10);
+    const idx = Math.floor(Math.random() * engine.fingerZones.length);
     promptFinger = idx;
     lastBeatTime = performance.now();
     engine.highlightZone(idx);
