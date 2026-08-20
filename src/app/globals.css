@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-kimiko-bg: #06090d;
-  --color-kimiko-panel: #0d141e;
-  --color-kimiko-border: #1a2531;
-  --color-kimiko-fg: #dbe3ea;
-  --color-kimiko-muted: #8993a1;
-  --color-kimiko-sub: #6c7684;
-  --color-kimiko-dim: #565f6b;
-  --color-kimiko-faint: #424a55;
-  --color-kimiko-rest: #2c333c;
-  --color-kimiko-accent: #6fa8ff;
-  --color-kimiko-accent-dark: #3d6bc4;
-  --color-kimiko-accent-soft: #a9cdfb;
-  --color-kimiko-danger: #d1555c;
-  --color-kimiko-glow: #8fe0e8;
+  --color-kimiko-bg: #0a0a0a;
+  --color-kimiko-panel: #131313;
+  --color-kimiko-border: #2a2a2a;
+  --color-kimiko-fg: #e4e2df;
+  --color-kimiko-muted: #9c9a96;
+  --color-kimiko-sub: #7a7874;
+  --color-kimiko-dim: #5c5a57;
+  --color-kimiko-faint: #454340;
+  --color-kimiko-rest: #302e2c;
+  --color-kimiko-accent: #cfcdc8;
+  --color-kimiko-accent-dark: #8f8d89;
+  --color-kimiko-accent-soft: #eae8e4;
+  --color-kimiko-danger: #5c5a57;
+  --color-kimiko-glow: #b0aeaa;
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
 }
 
@@ -30,23 +30,27 @@ body {
   touch-action: none;
 }
 
+/* Faint, breathing, slightly-out-of-focus — the "ghostly" idle state for
+   anything waiting on the player: logo, prompts, counters. */
 @keyframes kimiko-breathe {
   0%,
   100% {
-    opacity: 0.55;
+    opacity: 0.45;
+    filter: blur(0.3px);
   }
   50% {
     opacity: 1;
+    filter: blur(0);
   }
 }
 
 @keyframes kimiko-glow-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(111, 168, 255, 0);
+    box-shadow: 0 0 0 0 rgba(228, 226, 223, 0);
   }
   50% {
-    box-shadow: 0 0 24px 4px rgba(111, 168, 255, 0.35);
+    box-shadow: 0 0 22px 3px rgba(228, 226, 223, 0.18);
   }
 }
 
@@ -56,4 +60,44 @@ body {
 
 .kimiko-glow {
   animation: kimiko-glow-pulse 2.8s ease-in-out infinite;
+}
+
+/* Shared "game menu" chrome: angular chamfered corners instead of rounded
+   ones, for floating chrome — HUD, dialogs, cards — never full-bleed
+   screens. Pair with .kimiko-corner-brackets for the sci-fi reticle marks. */
+.kimiko-panel-cut {
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+
+.kimiko-btn-cut {
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+}
+
+.kimiko-corner-brackets {
+  position: relative;
+}
+
+.kimiko-corner-brackets::before,
+.kimiko-corner-brackets::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--color-kimiko-accent);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.kimiko-corner-brackets::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
+}
+
+.kimiko-corner-brackets::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1.5px solid;
+  border-right: 1.5px solid;
 }

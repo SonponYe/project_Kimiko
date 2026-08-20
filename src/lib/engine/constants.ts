@@ -5,11 +5,10 @@
 export const FINGERS_PER_HAND = 2;
 export const DEFAULT_FINGER_COUNT = FINGERS_PER_HAND * 2;
 
-// Both hands stay within the same airy blue-black family: left runs a shade
-// deeper/cooler, right a shade lighter/airier, so the two sides read as
-// related rather than clashing accent colors.
-export const LEFT_COLORS = ['#5b86e0', '#b9cdf7'] as const;
-export const RIGHT_COLORS = ['#6fa8ff', '#d3ebff'] as const;
+// No hue anywhere — hands are told apart by lightness alone, both within
+// the same ash/grey family: left runs a shade darker, right a shade lighter.
+export const LEFT_COLORS = ['#7d7b77', '#b7b5b0'] as const;
+export const RIGHT_COLORS = ['#9a9894', '#d4d2cd'] as const;
 
 export const FINGER_NAMES = ['index', 'thumb'] as const;
 
@@ -25,15 +24,18 @@ export const LETTER_MAP: Record<number, string> = {
 
 export const WORDS = ['FGHJ', 'JHGF', 'GFJH', 'HJGF', 'FJHG', 'GHJF', 'JFHG', 'HGFJ'];
 
+// Pure ash / grey / black — no hue. Positive feedback reads as brighter
+// (present, alive); negative feedback reads as dimmer (fading, disappearing)
+// — brightness carries the meaning that color used to.
 export const CANVAS_COLORS = {
-  bg: '#06090d',
-  trail: 'rgba(6,9,13,0.88)',
-  idleFade: 'rgba(6,9,13,0.3)',
-  gridLine: 'rgba(40,52,68,0.35)',
-  touchDot: 'rgba(219,227,234,0.15)',
-  accent: '#6fa8ff',
-  accentSoft: '#a9cdfb',
-  danger: '#d1555c',
-  glow: '#8fe0e8',
-  dim: '#8993a1',
+  bg: '#0a0a0a',
+  trail: 'rgba(10,10,10,0.88)',
+  idleFade: 'rgba(10,10,10,0.3)',
+  gridLine: 'rgba(60,60,58,0.35)',
+  touchDot: 'rgba(228,226,223,0.15)',
+  accent: '#cfcdc8',
+  accentSoft: '#eae8e4',
+  danger: '#5c5a57',
+  glow: '#b0aeaa',
+  dim: '#7a7874',
 };

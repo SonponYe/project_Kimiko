@@ -4,7 +4,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'KIMIKO',
-  description: 'Rest all ten fingers on the screen. Lifting one is the action.',
+  description: 'Rest your fingers on the screen. Lifting one is the action.',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -21,7 +21,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#0a0a0f',
+  themeColor: '#0a0a0a',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

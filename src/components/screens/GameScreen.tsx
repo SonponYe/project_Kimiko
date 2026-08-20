@@ -34,18 +34,18 @@ export default function GameScreen({ snapshot, engineRef }: GameScreenProps) {
       <ExitButton onExit={() => engineRef.current?.exitGame()} />
       <button
         onClick={togglePause}
-        className="pointer-events-auto fixed right-4 top-16 z-[200] rounded-xl border-[0.5px] border-kimiko-border bg-kimiko-bg/80 px-4 py-2 text-[13px] text-kimiko-dim transition-colors active:text-kimiko-fg"
+        className="kimiko-btn-cut pointer-events-auto fixed right-4 top-16 z-[200] border-[0.5px] border-kimiko-border bg-kimiko-bg/80 px-5 py-2 text-[13px] uppercase tracking-widest text-kimiko-dim transition-colors active:text-kimiko-fg"
       >
-        {localPaused ? '▶ resume' : '⏸ pause'}
+        {localPaused ? '▶ Resume' : '⏸ Pause'}
       </button>
       {localPaused && (
-        <div className="pointer-events-auto fixed inset-0 z-[250] flex items-center justify-center bg-black/40">
-          <div className="rounded-xl bg-kimiko-panel p-6">
-            <div className="mb-4 text-lg font-medium text-kimiko-fg">Paused</div>
+        <div className="pointer-events-auto fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="kimiko-panel-cut kimiko-corner-brackets border-[0.5px] border-kimiko-border bg-kimiko-panel p-8">
+            <div className="mb-5 text-center text-lg font-medium uppercase italic tracking-widest text-kimiko-fg">Paused</div>
             <div className="flex justify-center">
               <button
                 onClick={togglePause}
-                className="rounded-lg bg-kimiko-accent px-4 py-2 text-sm font-medium text-black"
+                className="kimiko-btn-cut bg-kimiko-accent px-8 py-2.5 text-sm font-medium uppercase italic tracking-widest text-kimiko-bg transition-transform active:scale-95"
               >
                 Resume
               </button>

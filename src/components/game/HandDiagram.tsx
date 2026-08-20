@@ -4,8 +4,8 @@ interface HandDiagramProps {
   side: Side;
 }
 
-const STROKE: Record<Side, string> = { left: '#5b86e0', right: '#6fa8ff' };
-const FILL: Record<Side, string> = { left: '#5b86e021', right: '#6fa8ff21' };
+const STROKE: Record<Side, string> = { left: '#9a9894', right: '#cfcdc8' };
+const FILL: Record<Side, string> = { left: '#9a989421', right: '#cfcdc821' };
 
 export default function HandDiagram({ side }: HandDiagramProps) {
   const transform = side === 'left' ? 'rotate(45deg)' : 'rotate(-45deg) scaleX(-1)';

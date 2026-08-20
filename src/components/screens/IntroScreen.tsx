@@ -19,7 +19,7 @@ export default function IntroScreen({ engineRef }: IntroScreenProps) {
 
   return (
     <div className={`pointer-events-auto flex h-full w-full flex-col items-center justify-center gap-5 bg-kimiko-bg px-10 text-center transition-all ${animating ? 'opacity-70 scale-95' : ''}`}>
-      <h1 className="text-[56px] font-light tracking-tight text-kimiko-fg">
+      <h1 className="text-[56px] font-light italic tracking-tight text-kimiko-fg">
         KIM<span className="kimiko-pulse font-semibold text-kimiko-accent">IKO</span>
       </h1>
       <p className="max-w-[280px] text-base leading-relaxed tracking-wide text-kimiko-muted">
@@ -33,7 +33,7 @@ export default function IntroScreen({ engineRef }: IntroScreenProps) {
 
       <button
         onClick={handleBegin}
-        className="kimiko-glow rounded-2xl bg-kimiko-accent px-10 py-4 text-[17px] font-medium tracking-wide text-kimiko-bg transition-transform active:scale-95 active:bg-kimiko-accent-dark"
+        className="kimiko-glow kimiko-btn-cut bg-kimiko-accent px-12 py-4 text-[17px] font-medium uppercase italic tracking-widest text-kimiko-bg transition-transform active:scale-95 active:bg-kimiko-accent-dark"
       >
         Begin
       </button>

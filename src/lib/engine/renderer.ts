@@ -116,7 +116,7 @@ export function drawDodgeObject(ctx: CanvasRenderingContext2D, o: DodgeObject, t
   ctx.beginPath();
   ctx.arc(o.x, o.y, o.radius, 0, Math.PI * 2);
   const gradient = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.radius);
-  gradient.addColorStop(0, '#e4767c');
+  gradient.addColorStop(0, CANVAS_COLORS.accentSoft);
   gradient.addColorStop(1, `${CANVAS_COLORS.danger}33`);
   ctx.fillStyle = gradient;
   ctx.fill();
@@ -146,7 +146,7 @@ export function drawIdleBackground(ctx: CanvasRenderingContext2D, w: number, h: 
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(111,168,255,${0.1 + 0.05 * Math.sin(t + i)})`;
+    ctx.strokeStyle = `rgba(207,205,200,${0.1 + 0.05 * Math.sin(t + i)})`;
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
@@ -159,7 +159,7 @@ export function drawIdleBackground(ctx: CanvasRenderingContext2D, w: number, h: 
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(143,224,232,${0.08 + 0.04 * Math.sin(t + i)})`;
+    ctx.strokeStyle = `rgba(120,118,116,${0.08 + 0.04 * Math.sin(t + i)})`;
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
