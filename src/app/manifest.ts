@@ -4,10 +4,10 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'KIMIKO',
     short_name: 'KIMIKO',
-    description: 'Rest your fingers on the screen. Lifting one is the action.',
+    description: 'A ghost that drifts between solid and spectral. Tap left or right to dodge and collect.',
     start_url: '/',
     display: 'fullscreen',
-    orientation: 'landscape',
+    orientation: 'portrait',
     background_color: '#0a0a0a',
     theme_color: '#0a0a0a',
     icons: [

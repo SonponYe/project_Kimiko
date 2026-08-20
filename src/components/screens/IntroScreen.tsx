@@ -2,34 +2,40 @@
 
 import { useState } from 'react';
 import type { RefObject } from 'react';
-import HandDiagram from '@/components/game/HandDiagram';
-import type { KimikoEngine } from '@/lib/engine/KimikoEngine';
+import type { RacerEngine } from '@/lib/racer/RacerEngine';
 
 interface IntroScreenProps {
-  engineRef: RefObject<KimikoEngine | null>;
+  engineRef: RefObject<RacerEngine | null>;
+  best: number;
 }
 
-export default function IntroScreen({ engineRef }: IntroScreenProps) {
+export default function IntroScreen({ engineRef, best }: IntroScreenProps) {
   const [animating, setAnimating] = useState(false);
 
   function handleBegin() {
     setAnimating(true);
-    setTimeout(() => engineRef.current?.showModeSelect(), 220);
+    setTimeout(() => engineRef.current?.startGame(), 220);
   }
 
   return (
-    <div className={`pointer-events-auto flex h-full w-full flex-col items-center justify-center gap-5 bg-kimiko-bg px-10 text-center transition-all ${animating ? 'opacity-70 scale-95' : ''}`}>
+    <div
+      className={`pointer-events-auto flex h-full w-full flex-col items-center justify-center gap-5 bg-kimiko-bg px-10 text-center transition-all ${animating ? 'scale-95 opacity-70' : ''}`}
+    >
       <h1 className="text-[56px] font-light italic tracking-tight text-kimiko-fg">
         KIM<span className="kimiko-pulse font-semibold text-kimiko-accent">IKO</span>
       </h1>
-      <p className="max-w-[280px] text-base leading-relaxed tracking-wide text-kimiko-muted">
-        Lay your phone flat. Rest your index fingers and thumbs on the screen. Lifting one is the only move.
+      <p className="max-w-[300px] text-base leading-relaxed tracking-wide text-kimiko-muted">
+        Tap left or right to switch lanes. Dodge what&apos;s solid, collect what isn&apos;t.
+      </p>
+      <p className="max-w-[300px] text-sm leading-relaxed text-kimiko-sub">
+        Your ghost drifts between <span className="text-kimiko-accent">solid</span> and{' '}
+        <span className="italic text-kimiko-dim">spectral</span> on its own. Solid gets hit — and scores. Spectral
+        passes through everything, untouched and unscored.
       </p>
 
-      <div className="my-2 flex items-end gap-12">
-        <HandDiagram side="left" />
-        <HandDiagram side="right" />
-      </div>
+      {best > 0 && (
+        <p className="text-xs uppercase tracking-widest text-kimiko-dim">Best {best}</p>
+      )}
 
       <button
         onClick={handleBegin}
@@ -37,7 +43,6 @@ export default function IntroScreen({ engineRef }: IntroScreenProps) {
       >
         Begin
       </button>
-      <p className="mt-2 text-xs text-kimiko-rest">Best on a real device, flat surface</p>
     </div>
   );
 }

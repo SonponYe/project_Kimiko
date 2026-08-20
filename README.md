@@ -1,21 +1,17 @@
-# KIMIKO
+# KIMIKO — Ghost Racer
 
-Lay your phone flat. Place all ten fingers on the screen. The phone locks
-each fingertip into its own zone — from that moment, lifting a finger is
-the only gesture. No taps, no swipes: the interaction is withdrawal, not
-approach.
+A ghost drifts down three lanes on its own. Tap the left or right half of
+the screen to switch lanes. Dodge what's solid, collect what isn't.
 
-Left hand comes in from the left, right hand from the right, leaving an
-open gap in the middle where prompts, letters, and falling objects appear.
-What a lift does depends on the active mode:
+The twist: the ghost automatically alternates between two states on a
+visible clock —
 
-- **Type** — each finger maps to a home-row letter; lift the right one to
-  spell out a word.
-- **Dodge** — objects fall toward a specific finger; lift it in time to
-  zap them.
-- **Memory** — a Simon-says sequence of fingers lights up; replay it back.
-- **Rhythm** — a beat highlights a finger on tempo; lift on the beat for
-  PERFECT/GOOD timing.
+- **Solid** — obstacles hit you (game over), and orbs count when collected.
+- **Spectral** — you pass through everything untouched, but orbs pass
+  through you too, unscored.
+
+Survival means reading the phase clock and your lane together, not just
+reacting to what's coming. Best score is kept locally (`localStorage`).
 
 KIMIKO is a PWA: it installs to the home screen, runs fullscreen, and
 works offline via a service worker once loaded once.
@@ -26,25 +22,22 @@ works offline via a service worker once loaded once.
 src/
   app/                    Next.js App Router shell (layout, page, manifest, globals.css)
   components/
-    game/                 Canvas, HUD, and other in-game UI pieces
-    screens/              The four top-level screens (intro, place fingers, mode select, game)
+    game/                 Canvas, HUD, and root game wiring
+    screens/              Intro and game-over overlays
     pwa/                  Service worker registration
-  hooks/                  React bridges to the engine (useKimikoEngine, useOrientationWarning)
-  lib/engine/
-    KimikoEngine.ts        Framework-agnostic game engine: touch state, finger zones, render loop
-    modes/                 One file per game mode (typing, dodge, memory, rhythm) behind a
-                            shared GameModeController interface + a registry — add a new mode
-                            by dropping in a file and registering it, nothing else changes
-    renderer.ts, particles.ts, fingerZones.ts, constants.ts   Rendering and gameplay primitives
+  hooks/                  useRacerEngine — the React bridge to the engine
+  lib/racer/
+    RacerEngine.ts         Framework-agnostic engine: lanes, obstacles, orbs, phase clock, render loop
+    particles.ts, constants.ts, types.ts
 public/
   sw.js                   Service worker (network-first with offline fallback)
   icons/                  App icon
 ```
 
 React only talks to the engine through `engine.subscribe(...)` (for UI state)
-and a handful of action methods (`showPlace()`, `startMode(id)`, `exitGame()`,
-...) — the canvas render loop and touch handling run independently of React's
-render cycle.
+and a handful of action methods (`startGame()`, `moveLane(dir)`, `restart()`,
+`showIntro()`) — the canvas render loop and input handling run independently
+of React's render cycle.
 
 ## Getting started
 
@@ -53,9 +46,8 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). On desktop, a single
-mouse click simulates one finger (enough to click through the UI); the real
-ten-finger flow needs a touchscreen.
+Open [http://localhost:3000](http://localhost:3000). On desktop, click the
+left/right half of the window (or use arrow keys / A-D) to switch lanes.
 
 > **Note:** `dev`/`build` are pinned to `--webpack` instead of Turbopack.
 > In this environment (Next.js 16 inside a OneDrive-synced folder), the
@@ -64,17 +56,20 @@ ten-finger flow needs a touchscreen.
 > the project outside OneDrive and confirm Turbopack loads cleanly, you can
 > drop `--webpack` from both scripts.
 
+## History
+
+This started as a multitouch "rest all ten fingers, lift one to act"
+concept — that mechanic is gone. It turned out to be unreliable on real
+hardware (most phones physically cap out around 5 simultaneous touch
+points) and, even scaled down to 4 fingers, didn't play well. What's left
+is the visual language that survived the pivot: the ash/grey/black
+palette, the oblique chamfered-corner "menu" chrome, and the ghostly
+pulse-and-blur idle state.
+
 ## What's still open
 
-Per the original concept, this rebuild ports the four prototype modes and
-the core "lift is the action" mechanic faithfully, but leaves deliberately
-open:
-
-- **Input depth** — lifts are still binary; slide-before-lift, pressure,
-  and hover aren't mapped to anything yet.
-- **The middle gap** — currently just holds text prompts; could become a
-  cursor, canvas, or reactive face.
-- **Sound** — no audio engine yet; rhythm mode in particular is built for one.
-- **Multiplayer** — two hands, one phone, facing each other.
-- **Accessibility** — the "rest all fingers, lift one" model may suit users
-  who struggle with precise tapping; unexplored.
+- **Sound** — no audio engine yet.
+- **More phase behaviors** — a third state, phase-triggered lane hazards,
+  a difficulty curve tied to phase timing instead of just speed.
+- **Accessibility** — tap targets, colorblind-safe feedback (already
+  brightness-based rather than hue-based, worth verifying).

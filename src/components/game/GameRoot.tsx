@@ -1,58 +1,28 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
-import GameScreen from '@/components/screens/GameScreen';
+import { useRef } from 'react';
+import GameOverScreen from '@/components/screens/GameOverScreen';
 import IntroScreen from '@/components/screens/IntroScreen';
-import ModeSelectScreen from '@/components/screens/ModeSelectScreen';
-import PlaceFingersScreen from '@/components/screens/PlaceFingersScreen';
-import { useKimikoEngine } from '@/hooks/useKimikoEngine';
-import { useIsPortrait } from '@/hooks/useOrientation';
-import { useMaxTouchPoints } from '@/hooks/useMaxTouchPoints';
-import { DEFAULT_FINGER_COUNT } from '@/lib/engine/constants';
-import { getModeMeta } from '@/lib/engine/modes/registry';
-import GameCanvas from './GameCanvas';
-import OrientationWarning from './OrientationWarning';
-
-// Only the finger-placement and in-game steps actually require the phone
-// flat in landscape — intro and mode-select are just button taps, so the
-// rotate prompt shouldn't block them.
-const SCREENS_REQUIRING_LANDSCAPE = new Set(['place', 'game']);
+import { useRacerEngine } from '@/hooks/useRacerEngine';
+import RacerCanvas from './RacerCanvas';
+import RacerHud from './RacerHud';
 
 export default function GameRoot() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { engineRef, snapshot } = useKimikoEngine(canvasRef);
-  const isPortrait = useIsPortrait();
-  const maxTouchPoints = useMaxTouchPoints();
-  useEffect(() => {
-    if (!maxTouchPoints) return;
-    // 4 fingers (index + thumb per hand) is the design target; only scale
-    // down further if a device genuinely can't sense that many at once.
-    if (engineRef.current) {
-      engineRef.current.setExpectedFingerCount(Math.min(DEFAULT_FINGER_COUNT, maxTouchPoints));
-    }
-  }, [maxTouchPoints, engineRef]);
-  const needsOrientationWarning = isPortrait && SCREENS_REQUIRING_LANDSCAPE.has(snapshot.screen);
-  const pendingModeMeta = snapshot.pendingMode ? getModeMeta(snapshot.pendingMode) : null;
+  const { engineRef, snapshot } = useRacerEngine(canvasRef);
 
   return (
     <div className="relative h-dvh w-dvw overflow-hidden bg-kimiko-bg text-kimiko-fg">
-      <GameCanvas canvasRef={canvasRef} engineRef={engineRef} />
+      <RacerCanvas canvasRef={canvasRef} engineRef={engineRef} />
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        {snapshot.screen === 'intro' && <IntroScreen engineRef={engineRef} />}
-        {snapshot.screen === 'mode-select' && <ModeSelectScreen engineRef={engineRef} />}
-        {snapshot.screen === 'place' && (
-          <PlaceFingersScreen
-            fingerCount={snapshot.fingerCount}
-            countdown={snapshot.countdown}
-            modeMeta={pendingModeMeta}
-            maxTouchPoints={maxTouchPoints}
-          />
+        {snapshot.screen === 'intro' && <IntroScreen engineRef={engineRef} best={snapshot.best} />}
+        {snapshot.screen === 'game' && (
+          <RacerHud score={snapshot.score} best={snapshot.best} phase={snapshot.phase} phaseProgress={snapshot.phaseProgress} />
         )}
-        {snapshot.screen === 'game' && <GameScreen snapshot={snapshot} engineRef={engineRef} />}
       </div>
 
-      {needsOrientationWarning && <OrientationWarning modeMeta={pendingModeMeta} />}
+      {snapshot.screen === 'gameover' && <GameOverScreen engineRef={engineRef} score={snapshot.score} best={snapshot.best} />}
     </div>
   );
 }

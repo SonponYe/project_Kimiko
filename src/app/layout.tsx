@@ -4,7 +4,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'KIMIKO',
-  description: 'Rest your fingers on the screen. Lifting one is the action.',
+  description: 'A ghost that drifts between solid and spectral. Tap left or right to dodge and collect.',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
