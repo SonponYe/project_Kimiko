@@ -21,23 +21,25 @@ export function burst(x: number, y: number, count: number, color: string = RACER
 }
 
 export function stepParticles(ctx: CanvasRenderingContext2D, particles: Particle[], dt: number): Particle[] {
+  // 0.92 per 60fps frame, expressed per-second so drag is frame-rate independent.
+  const drag = Math.pow(0.92, dt * 60);
   const alive: Particle[] = [];
+  ctx.save();
   for (const p of particles) {
     p.x += p.vx * dt;
     p.y += p.vy * dt;
-    p.vx *= 0.92;
-    p.vy *= 0.92;
+    p.vx *= drag;
+    p.vy *= drag;
     p.life -= p.decay * dt;
     if (p.life <= 0) continue;
     alive.push(p);
 
-    ctx.save();
     ctx.globalAlpha = Math.max(p.life, 0);
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.size * Math.max(p.life, 0.2), 0, Math.PI * 2);
     ctx.fillStyle = p.color;
     ctx.fill();
-    ctx.restore();
   }
+  ctx.restore();
   return alive;
 }

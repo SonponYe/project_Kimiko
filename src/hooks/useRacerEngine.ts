@@ -6,10 +6,12 @@ import type { RacerSnapshot } from '@/lib/racer/types';
 
 const DEFAULT_SNAPSHOT: RacerSnapshot = {
   screen: 'intro',
+  paused: false,
   score: 0,
   best: 0,
+  newBest: false,
   phase: 'solid',
-  phaseProgress: 1,
+  powerups: [],
 };
 
 export function useRacerEngine(canvasRef: RefObject<HTMLCanvasElement | null>) {

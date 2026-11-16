@@ -9,9 +9,8 @@ interface RacerCanvasProps {
 }
 
 // A tap's target is fixed to whatever element it started on. Skip UI
-// controls (buttons) so their native tap/click still fires — otherwise
-// preventDefault() below would suppress it, same lesson as the old touch
-// bug: buttons need to be left alone by the game's own input handling.
+// controls (buttons) so their native tap/click still fires. Otherwise
+// preventDefault() below would suppress it.
 function isInteractiveTarget(target: EventTarget | null): boolean {
   return target instanceof Element && target.closest('button, a, [role="button"]') !== null;
 }
@@ -24,9 +23,9 @@ export default function RacerCanvas({ canvasRef, engineRef }: RacerCanvasProps) 
       engineRef.current?.resize(window.innerWidth, window.innerHeight);
     };
     window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
 
-    // Tap the left or right half of the screen to change lanes — a single
-    // decisive tap per lane change, like any normal lane-runner.
+    // Tap the left or right half of the screen to change lanes.
     const laneFromX = (x: number) => (x < window.innerWidth / 2 ? -1 : 1);
 
     const handleTouchStart = (e: TouchEvent) => {
@@ -42,18 +41,39 @@ export default function RacerCanvas({ canvasRef, engineRef }: RacerCanvasProps) 
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft' || e.key === 'a') engineRef.current?.moveLane(-1);
-      if (e.key === 'ArrowRight' || e.key === 'd') engineRef.current?.moveLane(1);
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      const engine = engineRef.current;
+      if (!engine) return;
+      const key = e.key.toLowerCase();
+
+      if (key === 'arrowleft' || key === 'a') engine.moveLane(-1);
+      else if (key === 'arrowright' || key === 'd') engine.moveLane(1);
+      else if (key === 'escape' || key === 'p') engine.togglePause();
+      else if ((key === ' ' || key === 'enter') && !isInteractiveTarget(e.target)) {
+        e.preventDefault();
+        engine.primaryAction();
+      }
     };
+
+    // Never let the world run while the player can't see it.
+    const handleHidden = () => {
+      if (document.hidden) engineRef.current?.pause();
+    };
+    const handleBlur = () => engineRef.current?.pause();
 
     window.addEventListener('touchstart', handleTouchStart, { passive: false });
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('blur', handleBlur);
+    document.addEventListener('visibilitychange', handleHidden);
     canvas?.addEventListener('mousedown', handleMouseDown);
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('blur', handleBlur);
+      document.removeEventListener('visibilitychange', handleHidden);
       canvas?.removeEventListener('mousedown', handleMouseDown);
     };
   }, [canvasRef, engineRef]);

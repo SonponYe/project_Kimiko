@@ -101,3 +101,59 @@ body {
   border-bottom: 1.5px solid;
   border-right: 1.5px solid;
 }
+
+/* Screen / chip entrances: short and eased so state changes never pop. */
+@keyframes kimiko-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes kimiko-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes kimiko-chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.kimiko-fade-in {
+  animation: kimiko-fade-in 0.28s ease-out both;
+}
+
+.kimiko-pop-in {
+  animation: kimiko-pop-in 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.kimiko-chip-in {
+  animation: kimiko-chip-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kimiko-pulse,
+  .kimiko-glow {
+    animation: none;
+  }
+  .kimiko-fade-in,
+  .kimiko-pop-in,
+  .kimiko-chip-in {
+    animation-duration: 0.01s;
+  }
+}

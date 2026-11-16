@@ -10,6 +10,11 @@ visible clock —
 - **Spectral** — you pass through everything untouched, but orbs pass
   through you too, unscored.
 
+Power-ups (collected while solid) add a twist: **Shield** absorbs one hit,
+**Magnet** pulls orbs to you, **Slow** eases the world down, and **x2**
+doubles all scoring. Orbs and power-ups ghost out while you're spectral so
+you can see what you can't grab.
+
 Survival means reading the phase clock and your lane together, not just
 reacting to what's coming. Best score is kept locally (`localStorage`).
 
@@ -48,6 +53,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). On desktop, click the
 left/right half of the window (or use arrow keys / A-D) to switch lanes.
+Esc / P pauses, Space / Enter starts, retries or resumes. The game also
+pauses itself when the tab loses focus.
 
 > **Note:** `dev`/`build` are pinned to `--webpack` instead of Turbopack.
 > In this environment (Next.js 16 inside a OneDrive-synced folder), the
